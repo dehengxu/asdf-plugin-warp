@@ -220,7 +220,7 @@ _write_wrapper() {
 
 install_version() {
   local version="$1" install_path="$2"
-  local archive channel binary bin_dir payload
+  local archive channel binary bin_dir
 
   channel="$(version_channel "$version")" ||
     fail "'${version}' is not a Warp version string"
@@ -231,25 +231,18 @@ install_version() {
     fail "archive not found: ${archive} (the download step did not run?)"
 
   bin_dir="${install_path}/bin"
-  payload="${install_path}/.payload"
   mkdir -p "$install_path" "$bin_dir"
 
-  # Extract into a staging directory first so a failed extraction cannot
-  # leave a half-populated install behind.
-  rm -rf "$payload"
-  mkdir -p "$payload"
-  echo "* Unpacking $(basename "$archive")..."
-  tar -xzf "$archive" -C "$payload" ||
+  # The tarball already carries the layout we want -- the executable plus its
+  # `resources/` sibling -- so it is extracted straight into the install
+  # directory. Nothing has to be moved afterwards, which keeps the install
+  # free of rename operations.
+  echo "* Unpacking $(basename "$archive") into ${install_path}..."
+  tar -xzf "$archive" -C "$install_path" ||
     fail "could not unpack ${archive}"
 
-  [ -f "${payload}/${binary}" ] ||
-    fail "expected ${binary} inside ${archive}"
-
-  # Move the payload into place.
-  rm -rf "${install_path}/${binary}" "${install_path}/resources"
-  mv "${payload}/${binary}" "${install_path}/${binary}"
-  [ -d "${payload}/resources" ] && mv "${payload}/resources" "${install_path}/resources"
-  rm -rf "$payload"
+  [ -f "${install_path}/${binary}" ] ||
+    fail "expected ${install_path}/${binary} after install"
 
   chmod +x "${install_path}/${binary}"
   _write_wrapper "$bin_dir" "$channel"

@@ -28,6 +28,33 @@ Two public objects carry everything this plugin needs:
 The version list therefore comes from Warp itself, not from a tag list that
 could drift.
 
+## Integrity checking
+
+Google Cloud Storage publishes an md5 and a crc32c for every object, but the
+digest covers the **stored** object, which Warp uploads with
+`Content-Encoding: gzip`. A client that does not ask for gzip is served the
+**transparently decompressed** bytes instead, so the published digest covers a
+different byte sequence than the one that lands on disk — the two legitimately
+disagree even for a pristine download:
+
+```
+x-goog-stored-content-encoding: gzip
+x-goog-stored-content-length:   84738430     <- the stored (compressed) size
+```
+
+The plugin therefore:
+
+1. compares the received file against the published md5 and **reports a
+   mismatch as a warning**, not a failure, with an explanation;
+2. gates the install on `gzip -t`, which checks the CRC32 the gzip trailer
+   stores over the whole uncompressed tar. That is the authoritative check for
+   the bytes actually received, and it catches a truncated or corrupted
+   download;
+3. confirms the tarball really contains the expected executable and
+   `resources/` directory before the install is allowed to finish.
+
+A download whose gzip CRC does not check out is rejected outright.
+
 ## Supported platforms
 
 | Host | `uname -m` | artifact | channel in the name |
@@ -56,12 +83,15 @@ The channel is part of the version, so the same string is enough to build the
 download path. The `v` prefix that Warp uses upstream is dropped for asdf
 (its convention) and restored when the URL is built.
 
-`asdf list-all warp` prints every published version, newest first, across the
+`asdf list all warp` prints every published version, newest first, across the
 `stable`, `preview` and `dev` channels. Narrow it with a channel name:
 
 ```bash
-asdf list-all warp stable
+asdf list all warp stable
 ```
+
+> The Go rewrite of asdf (v0.16+) renamed a few subcommands. Use `asdf list all
+> warp` there; the classic bash asdf spells it `asdf list-all warp`.
 
 ## Install layout
 
@@ -83,13 +113,51 @@ resources would go missing.
 ```bash
 asdf plugin add dehengxu/asdf-plugin-warp
 asdf install warp latest
-asdf global warp <version>     # or: asdf set -u warp <version>
+asdf set -u warp <version>     # global; classic asdf: asdf global warp <version>
 asdf reshim warp
 warp --version
 ```
 
+> Go asdf (v0.16+) spells the global setter `asdf set -u`; the classic bash
+> asdf spells it `asdf global`.
+
 The CLI shares your Warp account with the desktop app. Run `warp` once and
 follow the login link it prints.
+
+## Troubleshooting: "No compatible versions installed"
+
+The Go rewrite of asdf tracks an install with a **marker file**:
+
+```
+~/.asdf/install-locks/<plugin>/<version>
+```
+
+`asdf install` creates that marker before it runs the plugin and deletes it
+afterwards. If the process is interrupted — or if the shell that ran it was
+not allowed to delete files — the marker survives, and asdf then reports the
+version as *not* installed even though the files are all there:
+
+```
+$ asdf list warp
+No compatible versions installed (warp)
+$ asdf current warp
+warp  0.2026.10.14.08.27.stable_01  ~/.tool-versions  false
+```
+
+The command still works — the shim resolves the version from
+`.tool-versions` and never consults the marker — but `asdf list`, `asdf where`
+and `asdf current` keep claiming the tool is missing. Clearing the stale
+marker puts asdf's bookkeeping back in order:
+
+```bash
+rm ~/.asdf/install-locks/warp/<version>
+asdf reshim warp
+```
+
+Note that `asdf install` needs **delete permission** on
+`~/.asdf/install-locks/` to finish cleanly. In a sandbox that forbids
+unlinking files, an install always ends with the marker still in place, even
+though the tool itself was unpacked correctly.
 
 ## The desktop app is not installed by this plugin
 

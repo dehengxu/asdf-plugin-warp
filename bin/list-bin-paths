@@ -2,5 +2,10 @@
 
 set -euo pipefail
 
-# Where asdf should look for executables after an install.
-echo "$ASDF_INSTALL_PATH/bin"
+# Relative paths (to ASDF_INSTALL_PATH) of the directories that hold the
+# executables asdf should create shims for.
+#
+# asdf's plugin contract wants paths *relative* to the install directory --
+# "bin" means "${ASDF_INSTALL_PATH}/bin". An absolute path here would point
+# at the wrong place and asdf would create no shim at all.
+echo "bin"
