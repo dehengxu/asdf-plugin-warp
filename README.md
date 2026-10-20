@@ -121,6 +121,22 @@ warp --version
 > Go asdf (v0.16+) spells the global setter `asdf set -u`; the classic bash
 > asdf spells it `asdf global`.
 
+## Install in one command
+
+`scripts/bootstrap.sh` registers the plugin, repairs a half-finished asdf
+state and installs the CLI:
+
+```bash
+scripts/bootstrap.sh            # install, or repair an existing install
+scripts/bootstrap.sh --check    # only report what is missing
+```
+
+It is idempotent, so it is safe to run again on a new machine or after a
+failed install. Among other things it clears stale install markers (see
+below), removes the leftovers of an interrupted extraction, and drops the
+`index.lock` / `config.lock` files that would otherwise break
+`asdf plugin update`.
+
 The CLI shares your Warp account with the desktop app. Run `warp` once and
 follow the login link it prints.
 
