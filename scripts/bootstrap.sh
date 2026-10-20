@@ -183,7 +183,9 @@ info "$TOOL_NAME $VERSION (global)"
 
 say "Shim"
 "$ASDF_BIN" reshim "$TOOL_NAME" "$VERSION"
-info "shim: $("$ASDF_BIN" which "$TOOL_NAME" 2>/dev/null || echo "$ASDF_DATA_DIR/shims/$TOOL_NAME")"
+resolved="$("$ASDF_BIN" which "$TOOL_NAME" 2>/dev/null | tail -n 1)"
+info "shim    : $ASDF_DATA_DIR/shims/$TOOL_NAME"
+info "resolved: ${resolved:-unknown}"
 
 say "Verify"
 "$TOOL_NAME" --version
