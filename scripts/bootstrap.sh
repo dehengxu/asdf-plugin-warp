@@ -69,12 +69,11 @@ if [ ! -d "$PLUGIN_DIR" ]; then
 	if [ "$CHECK_ONLY" -eq 1 ]; then
 		info "MISSING: $PLUGIN_DIR"
 	else
+		# The name has to be given separately: asdf only accepts lower-case
+		# names without a slash, and "warp" is not in the official plugin
+		# index, so the repository URL cannot be resolved from a short name.
 		info "adding $PLUGIN_NAME from $REPO_URL"
-		if [ "$ASDF_FLAVOUR" = "go" ]; then
-			"$ASDF_BIN" plugin add "dehengxu/$PLUGIN_NAME" >/dev/null
-		else
-			"$ASDF_BIN" plugin add "$PLUGIN_NAME" "$REPO_URL" >/dev/null
-		fi
+		"$ASDF_BIN" plugin add "$PLUGIN_NAME" "$REPO_URL" >/dev/null
 	fi
 else
 	# A leftover index.lock / config.lock makes every git operation in the

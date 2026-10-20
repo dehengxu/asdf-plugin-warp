@@ -111,12 +111,17 @@ resources would go missing.
 ## Usage
 
 ```bash
-asdf plugin add dehengxu/asdf-plugin-warp
+asdf plugin add warp https://github.com/dehengxu/asdf-plugin-warp.git
 asdf install warp latest
 asdf set -u warp <version>     # global; classic asdf: asdf global warp <version>
 asdf reshim warp
 warp --version
 ```
+
+> Warp is not in the official asdf plugin index, so the repository URL has to
+> be spelled out — `asdf plugin add warp` alone would fail. The plugin *name*
+> is still just `warp`, and asdf only accepts lower-case names without a
+> slash, so `asdf plugin add dehengxu/asdf-plugin-warp` is not valid either.
 
 > Go asdf (v0.16+) spells the global setter `asdf set -u`; the classic bash
 > asdf spells it `asdf global`.
