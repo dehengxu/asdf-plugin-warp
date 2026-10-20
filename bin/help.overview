@@ -1,0 +1,21 @@
+The Warp Agent CLI (the `warp` command) installed through asdf.
+
+Warp ships prebuilt, versioned, per-architecture tarballs on Google Cloud
+Storage. This plugin resolves the right artifact for your host, downloads it,
+verifies it against the digest Google publishes, and unpacks it.
+
+Supported hosts:
+  macOS  arm64  ->  warp-tui-<channel>-macos-aarch64.tar.gz
+  macOS  x64    ->  warp-tui-<channel>-macos-x86_64.tar.gz
+  Linux  arm64  ->  warp-tui-<channel>-linux-aarch64.tar.gz
+  Linux  x64    ->  warp-tui-<channel>-linux-x86_64.tar.gz
+
+Commands:
+  asdf list warp              list installed versions
+  asdf list-all warp          list every published version
+  asdf install warp latest    install the current stable build
+  asdf global warp <version>  pin the version for every shell
+  asdf reshim warp            refresh the `warp` shim
+
+The CLI is the same agent you get in the Warp desktop app, running in any
+terminal. It needs a Warp account: run `warp` once and follow the login link.

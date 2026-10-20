@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Where asdf should look for executables after an install.
+echo "$ASDF_INSTALL_PATH/bin"
